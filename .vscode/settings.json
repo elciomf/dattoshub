@@ -1,0 +1,22 @@
+{
+  "files.exclude": {
+    "**/.next": true,
+    "**/node_modules": true,
+    "**/tsconfig.json": true,
+    "**/next-env.d.ts": true,
+    "**/next.config.ts": true,
+    "**/package-lock.json": true,
+    "**/eslint.config.mjs": true,
+    "**/postcss.config.mjs": true
+  },
+  "search.exclude": {
+    "**/.next": true,
+    "**/node_modules": true,
+    "**/tsconfig.json": true,
+    "**/next-env.d.ts": true,
+    "**/next.config.ts": true,
+    "**/package-lock.json": true,
+    "**/eslint.config.mjs": true,
+    "**/postcss.config.mjs": true
+  }
+}
