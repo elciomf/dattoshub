@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 
-const MapWithoutSSR = dynamic(() => import("../comps/map"), {
+const MapWithoutSSR = dynamic(() => import("@/comp/map"), {
   ssr: false,
   loading: () => <p className="text-center">Loading map...</p>,
 });
