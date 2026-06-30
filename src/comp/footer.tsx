@@ -19,7 +19,7 @@ export async function Footer() {
   ];
 
   return (
-    <footer className="flex flex-col space-y-6 p-6">
+    <footer className="flex flex-col space-y-6 p-6 border-t">
       <nav className="flex flex-row items-center justify-between">
         <Link href={"/"} className="text-xl font-bold tracking-tighter">
           Dattos<span className="text-blue-600">Hub</span>

@@ -32,7 +32,7 @@ export default async function RootLayout({
       suppressHydrationWarning
       className={cn("h-full", "antialiased", "font-sans", raleway.variable)}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="h-full">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -40,9 +40,13 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <I18nProviderClient locale={locale}>
-            <Nav />
-            <main className="flex-1 flex">{children}</main>
-            <Footer />
+            <div className="flex h-dvh flex-col">
+              <Nav />
+              <div className="flex-1 overflow-y-auto">
+                <main className="flex min-h-full">{children}</main>
+                <Footer />
+              </div>
+            </div>
           </I18nProviderClient>
         </ThemeProvider>
       </body>

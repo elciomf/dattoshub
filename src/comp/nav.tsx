@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Input } from "@/comp/ui/input";
+// import { Input } from "@/comp/ui/input";
 import { getI18n } from "@/locales/server";
 import { LocaleSwitcher } from "./switch/locale";
 import { ThemeToggle } from "./switch/theme";
@@ -28,7 +28,7 @@ export async function Nav() {
             </li>
           ))}
         </ul>
-        <Input placeholder="Type to search..." />
+        {/* <Input placeholder="Type to search..." /> */}
       </nav>
       <div className="flex flex-row items-center space-x-2">
         <LocaleSwitcher />

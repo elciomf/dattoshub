@@ -12,14 +12,16 @@
   },
   "iconLibrary": "hugeicons",
   "rtl": false,
-  "aliases": {
-    "ui": "@/comp/ui",
-    "lib": "@/library",
-    "hooks": "@/hooks",
-    "utils": "@/library/utils",
-    "components": "@/comp"
-  },
   "menuColor": "default",
   "menuAccent": "subtle",
-  "registries": {}
+  "aliases": {
+    "components": "@/comp",
+    "utils": "@/library/utils",
+    "ui": "@/comp/ui",
+    "lib": "@/library",
+    "hooks": "@/hooks"
+  },
+  "registries": {
+    "@react-bits": "https://reactbits.dev/r/{name}.json"
+  }
 }
