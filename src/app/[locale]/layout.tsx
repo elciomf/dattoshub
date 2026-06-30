@@ -5,9 +5,10 @@ import { Raleway } from "next/font/google";
 
 import { Nav } from "@/comp/nav";
 import { Footer } from "@/comp/footer";
-import { getStaticParams } from "@/locales/server";
 import { ThemeProvider } from "@/comp/switch/theme";
+import { getStaticParams } from "@/locales/server";
 import { I18nProviderClient } from "@/locales/client";
+import { setStaticParamsLocale } from "next-international/server";
 
 const raleway = Raleway({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -17,14 +18,15 @@ export function generateStaticParams() {
   return getStaticParams();
 }
 
-export default async function RootLayout({
-  children,
+export default async function LocaleLayout({
   params,
-}: Readonly<{
-  children: React.ReactNode;
+  children,
+}: {
   params: Promise<{ locale: string }>;
-}>) {
+  children: React.ReactNode;
+}) {
   const { locale } = await params;
+  setStaticParamsLocale(locale);
 
   return (
     <html
