@@ -3,7 +3,6 @@ import { getI18n } from "@/locales/server";
 import { Separator } from "./ui/separator";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Github, Linkedin } from "@hugeicons/core-free-icons";
-// 1. Importe o componente de renderização que já veio instalado
 
 export async function Footer() {
   const t = await getI18n();
@@ -21,25 +20,24 @@ export async function Footer() {
   return (
     <footer className="flex flex-col space-y-6 p-6 border-t">
       <nav className="flex flex-row items-center justify-between">
-        <Link href={"/"} className="text-xl font-bold tracking-tighter">
-          Dattos<span className="text-blue-600">Hub</span>
-        </Link>
-        <ul className="flex flex-row space-x-3">
-          {social.map((item, index) => (
+        <ul className="flex flex-row items-center space-x-4">
+          {menu.map((item, index) => (
             <li key={index}>
-              <Link href={item.link}>
-                <HugeiconsIcon icon={item.icon} size={16} />
+              <Link
+                href={item.link}
+                aria-label={item.aria}
+                className="text-sm font-bold"
+              >
+                {item.text}
               </Link>
             </li>
           ))}
         </ul>
-      </nav>
-      <nav>
-        <ul className="flex flex-row items-center space-x-4">
-          {menu.map((item, index) => (
+        <ul className="flex flex-row space-x-3">
+          {social.map((item, index) => (
             <li key={index}>
-              <Link href={item.link} className="text-sm font-bold">
-                {item.text}
+              <Link href={item.link} rel="noopener noreferrer" target="_blank">
+                <HugeiconsIcon icon={item.icon} size={16} />
               </Link>
             </li>
           ))}
@@ -47,8 +45,8 @@ export async function Footer() {
       </nav>
       <Separator />
       <nav className="flex flex-row items-center justify-between">
-        <p>@ 2026 DattosHub</p>
-        <p>Built by elciomf</p>
+        <p>{t("footer.copyright", { year: 2026 })}</p>
+        <p>{t("footer.builtBy", { author: "elciomf" })}</p>
       </nav>
     </footer>
   );

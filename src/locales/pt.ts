@@ -1,45 +1,65 @@
 export default {
-  // Nav
-  "nav.about": "Sobre",
-  "nav.contact": "Contato",
-
-  // Map
-  "map.product": "Produto",
-  "map.year": "Ano",
-
-  about: {
-    eyebrow: "About",
-    title: "Mapping data, end to end.",
-    lead: "DattosHub turns scattered geospatial data into something you can explore.",
-    body: {
-      first: "Texto do primeiro parágrafo sobre o produto.",
-      second: "Segundo parágrafo: contexto, missão, o que diferencia.",
-    },
-    values: {
-      data: { title: "Unified data", description: "Tudo num lugar só." },
-      maps: { title: "Built on maps", description: "Geoespacial no centro." },
-      open: {
-        title: "Open by default",
-        description: "Transparente e acessível.",
-      },
-    },
+  nav: {
+    about: "Sobre",
+    contact: "Contato",
   },
-
+  footer: {
+    copyright: "© {year} DattosHub",
+    builtBy: "Feito por {author}",
+  },
+  about: {
+    whatWeDo: { pre: "O que ", highlight: "fazemos", post: "?" },
+    whatWeDoBody:
+      "Construímos toda a infraestrutura de dados do seu negócio — de pipelines a dashboards, transformando dados brutos em decisões.",
+    howWeDo: { pre: "Como ", highlight: "fazemos", post: "?" },
+    howWeDoBody:
+      "Mapeamos, modelamos e reunimos tudo em um único hub interativo, para o seu time enxergar o quadro completo em um só lugar.",
+  },
   contact: {
-    title: "Get in touch",
-    lead: "Dúvida, feedback ou um dataset que você quer no mapa? Manda ver.",
-    info: {
-      email: { label: "Email" },
-      location: { label: "Location", value: "Remote · Worldwide" },
+    hero: { pre: "Fale ", highlight: "conosco" },
+    dropLine: { pre: "Mande uma ", highlight: "mensagem" },
+    body: "A forma mais rápida de falar com a gente. Lemos tudo e normalmente respondemos em alguns dias.",
+  },
+  map: {
+    mode: "Modo",
+    product: "Produto",
+    year: "Ano",
+    from: "De",
+    to: "Até",
+    threshold: "Acima de (t)",
+    municipality: "Município",
+    modes: {
+      absolute: "Produção (absoluto)",
+      trend: "Tendência (variação %)",
+      condition: "Condição (acima de X)",
     },
-    form: {
-      name: "Name",
-      email: "Email",
-      message: "Message",
-      submit: "Send message",
-      sending: "Sending…",
-      success: "Valeu! A gente responde em breve.",
-      error: "Algo deu errado. Tenta de novo.",
+    products: {
+      apple: "Maçã",
+      banana: "Banana (cacho)",
+      soy: "Soja (em grão)",
+      corn: "Milho (em grão)",
+      tobacco: "Fumo (em folha)",
+      rice: "Arroz (em casca)",
+    },
+    legend: {
+      production: "Produção (t)",
+      trend: "Variação {from}→{to}",
+      condition: "Condição",
+      above: "≥ {value} t",
+      below: "< {value} t",
+    },
+    divLabels: {
+      veryNegative: "≤ -50%",
+      negative: "-50 a -10%",
+      neutral: "-10 a +10%",
+      positive: "+10 a +50%",
+      veryPositive: "> +50%",
+    },
+    popup: {
+      noData: "sem dado",
+      unavailable: "variação indisponível",
+      conditionHit: "{value} t (✓ acima de {threshold} t)",
+      conditionMiss: "{value} t (abaixo de {threshold} t)",
     },
   },
 } as const;

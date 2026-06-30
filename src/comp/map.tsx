@@ -4,6 +4,7 @@ import "leaflet/dist/leaflet.css";
 import { useEffect, useMemo, useState } from "react";
 import type { Feature, GeoJsonObject } from "geojson";
 import { MapContainer, TileLayer, GeoJSON } from "react-leaflet";
+import { useI18n, useCurrentLocale } from "@/locales/client";
 import { Input } from "@/comp/ui/input";
 import {
   Select,
@@ -13,44 +14,31 @@ import {
   SelectValue,
 } from "@/comp/ui/select";
 
-// Sequencial (Blues) — para o modo absoluto
+// Sequencial (Blues) — modo absoluto
 const PALETTE = ["#eff3ff", "#bdd7e7", "#6baed6", "#3182bd", "#08519c"];
 
-// Divergente (RdBu) — para variação %, centrada em 0
+// Divergente (RdBu) — variação %, centrada em 0
 const DIV_BREAKS = [-50, -10, 10, 50]; // em %
 const DIV_PALETTE = ["#ca0020", "#f4a582", "#f7f7f7", "#92c5de", "#0571b0"];
-const DIV_LABELS = [
-  "≤ -50%",
-  "-50 a -10%",
-  "-10 a +10%",
-  "+10 a +50%",
-  "> +50%",
-];
 
 const COND_HIT = "#08519c";
 const COND_MISS = "#e5e7eb";
 
-const NO_DATA_FILL = "#9ca3af"; // cinza claramente fora da escala
+const NO_DATA_FILL = "#9ca3af";
 const DATA_OPACITY = 0.75;
-const NO_DATA_OPACITY = 0.25; // translúcido: o mapa-base aparece por baixo
+const NO_DATA_OPACITY = 0.25;
 
-const PRODUCTS = [
-  { code: "40260", label: "Maçã" },
-  { code: "40136", label: "Banana (cacho)" },
-  { code: "40124", label: "Soja (em grão)" },
-  { code: "40122", label: "Milho (em grão)" },
-  { code: "40113", label: "Fumo (em folha)" },
-  { code: "40102", label: "Arroz (em casca)" },
-];
+const MODE_VALUES = ["absoluto", "tendencia", "condicao"] as const;
+type Mode = (typeof MODE_VALUES)[number];
 
 const years = ["2024", "2023", "2022", "2021", "2020"];
 
-const MODES = [
-  { value: "absoluto", label: "Produção (absoluto)" },
-  { value: "tendencia", label: "Tendência (variação %)" },
-  { value: "condicao", label: "Condição (acima de X)" },
-] as const;
-type Mode = (typeof MODES)[number]["value"];
+// locale do app -> tag BCP-47 para formatação de número
+const NUM_LOCALE: Record<string, string> = {
+  en: "en-US",
+  pt: "pt-BR",
+  es: "es-ES",
+};
 
 type PamRow = { D1C: string; D3C: string; D4C: string; V: string };
 
@@ -58,32 +46,59 @@ function code(f: Feature): string {
   const p = f.properties ?? {};
   return String(p.id ?? p.CD_MUN ?? p.codarea ?? "");
 }
-function getNome(f: Feature): string {
+function getNome(f: Feature, fallback: string): string {
   const p = f.properties ?? {};
-  return p.name ?? p.NM_MUN ?? p.nome ?? "Município";
+  return p.name ?? p.NM_MUN ?? p.nome ?? fallback;
 }
 
-// Índice município -> produção, para um (produto, ano)
 function buildValueMap(rows: PamRow[], product: string, year: string) {
   const m = new Map<string, number>();
   for (const row of rows) {
     if (row.D4C !== product || row.D3C !== year) continue;
-    const v = Number(row.V); // "-" / "..." viram NaN
+    const v = Number(row.V);
     if (!Number.isNaN(v)) m.set(String(row.D1C), v);
   }
   return m;
 }
 
 export default function SimpleMap() {
+  const t = useI18n();
+  const locale = useCurrentLocale();
+  const fmt = (n: number) => n.toLocaleString(NUM_LOCALE[locale] ?? "en-US");
+
   const [scmun, setScmun] = useState<GeoJsonObject | null>(null);
   const [pamsc, setPamsc] = useState<PamRow[]>([]);
 
   const [mode, setMode] = useState<Mode>("absoluto");
   const [product, setProduct] = useState("40124"); // Soja
-  const [year, setYear] = useState("2024"); // absoluto + condição
-  const [yearFrom, setYearFrom] = useState("2020"); // tendência (de)
-  const [yearTo, setYearTo] = useState("2024"); // tendência (até)
-  const [threshold, setThreshold] = useState(50000); // condição (t)
+  const [year, setYear] = useState("2024");
+  const [yearFrom, setYearFrom] = useState("2020");
+  const [yearTo, setYearTo] = useState("2024");
+  const [threshold, setThreshold] = useState(50000);
+
+  // Listas traduzidas (códigos/valores estáveis, labels via t())
+  const PRODUCTS: { code: string; label: string }[] = [
+    { code: "40260", label: t("map.products.apple") },
+    { code: "40136", label: t("map.products.banana") },
+    { code: "40124", label: t("map.products.soy") },
+    { code: "40122", label: t("map.products.corn") },
+    { code: "40113", label: t("map.products.tobacco") },
+    { code: "40102", label: t("map.products.rice") },
+  ];
+
+  const MODES: { value: Mode; label: string }[] = [
+    { value: "absoluto", label: t("map.modes.absolute") },
+    { value: "tendencia", label: t("map.modes.trend") },
+    { value: "condicao", label: t("map.modes.condition") },
+  ];
+
+  const DIV_LABELS = [
+    t("map.divLabels.veryNegative"),
+    t("map.divLabels.negative"),
+    t("map.divLabels.neutral"),
+    t("map.divLabels.positive"),
+    t("map.divLabels.veryPositive"),
+  ];
 
   useEffect(() => {
     Promise.all([
@@ -91,19 +106,17 @@ export default function SimpleMap() {
       fetch("/database/pamsc.json").then((r) => r.json()),
     ]).then(([g, pam]) => {
       setScmun(g);
-      setPamsc(Array.isArray(pam) ? pam.slice(1) : []); // descarta cabeçalho
+      setPamsc(Array.isArray(pam) ? pam.slice(1) : []);
     });
   }, []);
 
-  const name = PRODUCTS.find((p) => p.code === product)?.label ?? "Produto";
-  const fmt = (n: number) => n.toLocaleString("pt-BR");
+  const name =
+    PRODUCTS.find((p) => p.code === product)?.label ?? t("map.product");
 
-  // Mapa de valores do ano único (absoluto / condição)
   const valAtual = useMemo(
     () => buildValueMap(pamsc, product, year),
     [pamsc, product, year],
   );
-  // Mapas dos dois anos (tendência)
   const valDe = useMemo(
     () => buildValueMap(pamsc, product, yearFrom),
     [pamsc, product, yearFrom],
@@ -113,7 +126,6 @@ export default function SimpleMap() {
     [pamsc, product, yearTo],
   );
 
-  // Quantis só fazem sentido no modo absoluto
   const thresholds = useMemo(() => {
     if (mode !== "absoluto") return [] as number[];
     const vals = [...valAtual.values()]
@@ -157,7 +169,6 @@ export default function SimpleMap() {
         fillOpacity: DATA_OPACITY,
       };
     }
-    // tendência
     const a = valDe.get(c);
     const b = valAte.get(c);
     if (a === undefined || b === undefined || a <= 0) return noData;
@@ -169,21 +180,32 @@ export default function SimpleMap() {
 
   function popupFor(f: Feature): string {
     const c = code(f);
-    const nome = `<strong>${getNome(f)}</strong>`;
+    const nome = `<strong>${getNome(f, t("map.municipality"))}</strong>`;
     if (mode === "absoluto") {
       const v = valAtual.get(c) ?? 0;
-      return `${nome}<br/>${name} · ${year}<br/>${v ? fmt(v) + " t" : "sem dado"}`;
+      const val = v ? `${fmt(v)} t` : t("map.popup.noData");
+      return `${nome}<br/>${name} · ${year}<br/>${val}`;
     }
     if (mode === "condicao") {
       const v = valAtual.get(c);
-      if (v === undefined) return `${nome}<br/>${name} · ${year}<br/>sem dado`;
-      const tag = v >= threshold ? "✓ acima" : "abaixo";
-      return `${nome}<br/>${name} · ${year}<br/>${fmt(v)} t (${tag} de ${fmt(threshold)} t)`;
+      if (v === undefined)
+        return `${nome}<br/>${name} · ${year}<br/>${t("map.popup.noData")}`;
+      const line =
+        v >= threshold
+          ? t("map.popup.conditionHit", {
+              value: fmt(v),
+              threshold: fmt(threshold),
+            })
+          : t("map.popup.conditionMiss", {
+              value: fmt(v),
+              threshold: fmt(threshold),
+            });
+      return `${nome}<br/>${name} · ${year}<br/>${line}`;
     }
     const a = valDe.get(c);
     const b = valAte.get(c);
     if (a === undefined || b === undefined || a <= 0) {
-      return `${nome}<br/>${name}<br/>variação indisponível`;
+      return `${nome}<br/>${name}<br/>${t("map.popup.unavailable")}`;
     }
     const pct = ((b - a) / a) * 100;
     const sinal = pct >= 0 ? "+" : "";
@@ -195,9 +217,8 @@ export default function SimpleMap() {
       ? valDe.size > 0 && valAte.size > 0
       : valAtual.size > 0;
 
-  // key precisa refletir tudo que muda a cor, senão o Leaflet
-  // mantém o estilo antigo das camadas já desenhadas
-  const geoKey = `${mode}-${product}-${year}-${yearFrom}-${yearTo}-${threshold}`;
+  // a key inclui o locale para o Leaflet redesenhar popups ao trocar idioma
+  const geoKey = `${locale}-${mode}-${product}-${year}-${yearFrom}-${yearTo}-${threshold}`;
 
   return (
     <div className="w-full h-full relative">
@@ -234,7 +255,7 @@ export default function SimpleMap() {
       {/* Filtros */}
       <div className="absolute top-3 right-3 z-[1000] flex flex-col gap-2 rounded-lg border bg-background/95 p-3 shadow-md backdrop-blur">
         <div className="flex flex-col gap-1">
-          <span className="text-xs font-medium">Modo</span>
+          <span className="text-xs font-medium">{t("map.mode")}</span>
           <Select value={mode} onValueChange={(v) => setMode(v as Mode)}>
             <SelectTrigger className="w-48">
               <SelectValue />
@@ -250,7 +271,7 @@ export default function SimpleMap() {
         </div>
 
         <div className="flex flex-col gap-1">
-          <span className="text-xs font-medium">Produto</span>
+          <span className="text-xs font-medium">{t("map.product")}</span>
           <Select value={product} onValueChange={setProduct}>
             <SelectTrigger className="w-48">
               <SelectValue />
@@ -265,10 +286,9 @@ export default function SimpleMap() {
           </Select>
         </div>
 
-        {/* Ano único (absoluto e condição) */}
         {mode !== "tendencia" && (
           <div className="flex flex-col gap-1">
-            <span className="text-xs font-medium">Ano</span>
+            <span className="text-xs font-medium">{t("map.year")}</span>
             <Select value={year} onValueChange={setYear}>
               <SelectTrigger className="w-48">
                 <SelectValue />
@@ -284,11 +304,10 @@ export default function SimpleMap() {
           </div>
         )}
 
-        {/* Dois anos (tendência) */}
         {mode === "tendencia" && (
           <div className="flex gap-2">
             <div className="flex flex-col gap-1">
-              <span className="text-xs font-medium">De</span>
+              <span className="text-xs font-medium">{t("map.from")}</span>
               <Select value={yearFrom} onValueChange={setYearFrom}>
                 <SelectTrigger className="w-[5.75rem]">
                   <SelectValue />
@@ -303,7 +322,7 @@ export default function SimpleMap() {
               </Select>
             </div>
             <div className="flex flex-col gap-1">
-              <span className="text-xs font-medium">Até</span>
+              <span className="text-xs font-medium">{t("map.to")}</span>
               <Select value={yearTo} onValueChange={setYearTo}>
                 <SelectTrigger className="w-[5.75rem]">
                   <SelectValue />
@@ -320,10 +339,9 @@ export default function SimpleMap() {
           </div>
         )}
 
-        {/* Limiar (condição) */}
         {mode === "condicao" && (
           <div className="flex flex-col gap-1">
-            <span className="text-xs font-medium">Acima de (t)</span>
+            <span className="text-xs font-medium">{t("map.threshold")}</span>
             <Input
               type="number"
               min={0}
@@ -340,7 +358,7 @@ export default function SimpleMap() {
       <div className="absolute bottom-6 left-3 z-[1000] rounded-lg border bg-background/95 p-3 text-xs shadow-md backdrop-blur">
         {mode === "absoluto" && thresholds.length > 0 && (
           <>
-            <p className="mb-1.5 font-semibold">Produção (t)</p>
+            <p className="mb-1.5 font-semibold">{t("map.legend.production")}</p>
             {PALETTE.map((cor, i) => {
               const lo = i === 0 ? 0 : thresholds[i - 1];
               const hi = thresholds[i];
@@ -364,7 +382,7 @@ export default function SimpleMap() {
         {mode === "tendencia" && (
           <>
             <p className="mb-1.5 font-semibold">
-              Variação {yearFrom}→{yearTo}
+              {t("map.legend.trend", { from: yearFrom, to: yearTo })}
             </p>
             {DIV_PALETTE.map((cor, i) => (
               <div key={i} className="flex items-center gap-2">
@@ -380,20 +398,20 @@ export default function SimpleMap() {
 
         {mode === "condicao" && (
           <>
-            <p className="mb-1.5 font-semibold">Condição</p>
+            <p className="mb-1.5 font-semibold">{t("map.legend.condition")}</p>
             <div className="flex items-center gap-2">
               <span
                 className="inline-block h-3 w-3 rounded-sm border"
                 style={{ backgroundColor: COND_HIT }}
               />
-              <span>≥ {fmt(threshold)} t</span>
+              <span>{t("map.legend.above", { value: fmt(threshold) })}</span>
             </div>
             <div className="flex items-center gap-2">
               <span
                 className="inline-block h-3 w-3 rounded-sm border"
                 style={{ backgroundColor: COND_MISS }}
               />
-              <span>&lt; {fmt(threshold)} t</span>
+              <span>{t("map.legend.below", { value: fmt(threshold) })}</span>
             </div>
           </>
         )}

@@ -1,26 +1,37 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useTheme } from "next-themes";
 
 const PixelBlast = dynamic(() => import("@/comp/ui/blast"), { ssr: false });
 
 export function PixelBlastBackground() {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme !== "light";
+
   return (
     <div className="absolute inset-0 -z-10">
       <PixelBlast
+        key={isDark ? "dark" : "light"}
+        color={isDark ? "#1d64c1" : "#1e3a8a"}
         variant="square"
-        pixelSize={4}
-        color="#94a3b8"
-        patternScale={2}
-        patternDensity={0.6}
+        liquid
+        transparent
         enableRipples
-        rippleSpeed={0.3}
+        autoPauseOffscreen
+        speed={0.5}
+        edgeFade={0.5}
+        pixelSize={1.5}
+        rippleSpeed={0.35}
+        patternScale={2.5}
+        liquidRadius={2.5}
+        patternDensity={1}
+        liquidStrength={0.06}
         rippleThickness={0.1}
         rippleIntensityScale={1}
-        speed={0.5}
-        transparent
-        edgeFade={0.5}
       />
+
+      <div className="absolute inset-0" />
     </div>
   );
 }

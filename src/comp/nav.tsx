@@ -15,7 +15,7 @@ export async function Nav() {
   return (
     <header className="flex flex-row items-center justify-between px-4 py-2">
       <nav className="flex flex-row items-center space-x-6">
-        <Link href={"/"} className="text-xl font-bold tracking-tighter">
+        <Link href={"/"} className="text-xl font-bold tracking-tighter italic">
           Dattos<span className="text-blue-600">Hub</span>
         </Link>
         <ul className="flex flex-row items-center space-x-4">
