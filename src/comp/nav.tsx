@@ -18,7 +18,7 @@ export async function Nav() {
         <Link href={"/"} className="text-xl font-bold tracking-tighter italic">
           Dattos<span className="text-blue-600">Hub</span>
         </Link>
-        <ul className="flex flex-row items-center space-x-4">
+        {/* <ul className="flex flex-row items-center space-x-4">
           {menu.map((item, index) => (
             <li
               key={index}
@@ -28,7 +28,7 @@ export async function Nav() {
             </li>
           ))}
         </ul>
-        {/* <Input placeholder="Type to search..." /> */}
+        <Input placeholder="Type to search..." /> */}
       </nav>
       <div className="flex flex-row items-center space-x-2">
         <LocaleSwitcher />

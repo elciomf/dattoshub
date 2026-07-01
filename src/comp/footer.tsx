@@ -20,7 +20,7 @@ export async function Footer() {
   return (
     <footer className="flex flex-col space-y-6 p-6 border-t">
       <nav className="flex flex-row items-center justify-between">
-        <ul className="flex flex-row items-center space-x-4">
+        {/* <ul className="flex flex-row items-center space-x-4">
           {menu.map((item, index) => (
             <li key={index}>
               <Link
@@ -32,7 +32,7 @@ export async function Footer() {
               </Link>
             </li>
           ))}
-        </ul>
+        </ul> */}
         <ul className="flex flex-row space-x-3">
           {social.map((item, index) => (
             <li key={index}>
@@ -42,11 +42,13 @@ export async function Footer() {
             </li>
           ))}
         </ul>
-      </nav>
-      <Separator />
-      <nav className="flex flex-row items-center justify-between">
-        <p>{t("footer.copyright", { year: 2026 })}</p>
-        <p>{t("footer.builtBy", { author: "elciomf" })}</p>
+        {/* </nav> */}
+        {/* <Separator /> */}
+        {/* <nav className="flex flex-row items-center justify-between"> */}
+        <p>
+          {t("footer.copyright", { year: 2026 })} •
+          {t("footer.builtBy", { author: "elciomf" })}
+        </p>
       </nav>
     </footer>
   );
